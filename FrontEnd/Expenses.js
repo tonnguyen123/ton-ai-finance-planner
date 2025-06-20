@@ -11,6 +11,7 @@ import {
   FlatList, 
   TouchableOpacity
 } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import {  useState, useRef } from 'react';
 import { TextInput as PaperInput } from 'react-native-paper';
@@ -21,15 +22,20 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 
 export default function Expenses() {
-  const [items, setItems] = useState([]);
-  const [imageUri, setImageUri] = useState(null);
-  const [totalPrice, setTotalPrice] = useState('');
-  const [usedCamera, setUsedCamera] = useState(false);
-  const [storeAddr, setStoreAddr] = useState('');
-  const [purchaseTime, setPurchaseTime] = useState('');
-  const [wantToEdit, setWantEdit] = useState(false);
-  const [purchaseDate, setPurchaseDate] = useState('');
+  const [items, setItems] = useState([]);   //List of all information of the receipt
+  const [imageUri, setImageUri] = useState(null);  //The path containing the picture of the receipt
+  const [totalPrice, setTotalPrice] = useState('');  //The total price of the receipt
+  const [usedCamera, setUsedCamera] = useState(false);  //Check if user wants to use Camera to take picture or not
+  const [storeAddr, setStoreAddr] = useState('');    //Store's addr on receipt
+  const [purchaseTime, setPurchaseTime] = useState('');  //Purchase Time on receipt
+  const [wantToEdit, setWantEdit] = useState(false);   //Check if user wants to edit extracted information
+  const [purchaseDate, setPurchaseDate] = useState(''); //Purchase date on receipt
   const [store, setStore] = useState('');
+
+  const [manualStore, setManualStore] = useState('');  //Check if user enters store manually for receipt's info
+
+  const [manualMode, setManualMode] = useState(false); //Check if user wants to enter receipt's info manually
+
 
   const [receiptType, setReceiptType] = useState('');  //Types of receipts for different purposes in life
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -69,6 +75,7 @@ const handleSelectSuggestion = (suggestion) => {
 
 
   const handleChooseSource = () => {
+    setManualMode(false);
   Alert.alert(
     'Upload Receipt',
     'Choose how you want to add your receipt:',
@@ -250,6 +257,7 @@ const processPickedImage = async (uri) => {
 
   const handleScreenshotAndUpload = async () => {
     setWantEdit(false);
+    setManualMode(false);
     try {
       const uri = await captureRef(viewRef, {
         format: 'jpg',
@@ -298,14 +306,100 @@ const processPickedImage = async (uri) => {
         ref={viewRef} 
       >
         <View collapsable={false}>
-          <Button title="Scan picture of your receipt" onPress={handleChooseSource} />
+          <TouchableOpacity
+            onPress={handleChooseSource}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#007AFF',
+              padding: 12,
+              borderRadius: 6,
+              marginBottom: 15,
+            }}
+          >
+        <FontAwesome name="camera" size={20} color="#fff" style={{ marginRight: 10 }} />
+        <Text style={{ color: '#fff', fontSize: 16 }}> Scan picture of your Receipt or Earning</Text>
+        </TouchableOpacity>
 
+        {/* Manual entry button */}
+        <TouchableOpacity
+          onPress={() => setManualMode(true)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#34A853',
+            padding: 12,
+            borderRadius: 6,
+            marginBottom: 20,
+          }}
+        >
+          <FontAwesome name="pencil" size={20} color="#fff" style={{ marginRight: 10 }} />
+          <Text style={{ color: '#fff', fontSize: 16 }}>Enter receipt or earning manually</Text>
+        </TouchableOpacity>
           {imageUri && (
             <Image
               source={{ uri: imageUri }}
               style={{ height: 500, marginVertical: 20 }}
             />
           )}
+
+
+          {manualMode && (
+          <View style={{ marginBottom: 20 }}>
+            <TextInput
+              placeholder="Store Name"
+              value={manualStore}
+              onChangeText={setManualStore}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+            />
+            <TextInput
+              placeholder="Total Price"
+              value={totalPrice}
+              onChangeText={setTotalPrice}
+              keyboardType="numeric"
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+            />
+            <TextInput
+              placeholder="Purchase Date (YYYY-MM-DD)"
+              value={purchaseDate}
+              onChangeText={setPurchaseDate}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+            />
+            <TextInput
+              placeholder="Receipt Type"
+              value={receiptType}
+              onChangeText={setReceiptType}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+            />
+
+            <TouchableOpacity
+                onPress={handleScreenshotAndUpload}
+                style={{
+                  backgroundColor: 'green',
+                  padding: 12,
+                  borderRadius: 6,
+                  alignItems: 'center',
+                  marginBottom: 20,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
+                  Save Manually Entered Receipt
+                </Text>
+              </TouchableOpacity>
+            {manualMode && (
+            <TouchableOpacity onPress={() => setManualMode(false)} style={{
+                  backgroundColor: 'red',
+                  padding: 12,
+                  borderRadius: 6,
+                  alignItems: 'center',
+                  marginBottom: 20,
+                }}>
+              <Text style={{ color: 'white' }}>Cancel</Text>
+            </TouchableOpacity>
+          )}
+          </View>
+        )}
+
 
           {wantToEdit ? (
             <View>
@@ -358,13 +452,13 @@ const processPickedImage = async (uri) => {
               <TextInput
                 value={purchaseDate}
                 onChangeText={setPurchaseDate}
-                placeholder="Purchase Date"
+                placeholder="Purchase Date (YYYY-MM-DD)"
                 style={{ borderBottomWidth: 1 }}
               />
               <TextInput
                 value={purchaseTime}
                 onChangeText={setPurchaseTime}
-                placeholder="Purchase Time"
+                placeholder="Purchase Time(HH:MM)"
                 style={{ borderBottomWidth: 1 }}
               />
               <PaperInput
@@ -376,12 +470,18 @@ const processPickedImage = async (uri) => {
             />
 
             {/* Dropdown Suggestions */}
-            {filteredSuggestions.length > 0 && (
-              <FlatList
-                data={filteredSuggestions}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleSelectSuggestion(item)}>
+            {filteredSuggestions.length > 0  &&(
+              <ScrollView
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  maxHeight: 150,
+                  marginBottom: 10,
+                }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredSuggestions.map((item) => (
+                  <TouchableOpacity key={item} onPress={() => handleSelectSuggestion(item)}>
                     <Text style={{
                       padding: 10,
                       backgroundColor: '#f0f0f0',
@@ -391,21 +491,20 @@ const processPickedImage = async (uri) => {
                       {item}
                     </Text>
                   </TouchableOpacity>
-                )}
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#ccc',
-                  maxHeight: 150,
-                  marginBottom: 10,
-                }}
-              />
+                ))}
+              </ScrollView>
             )}
+
 
             <Button title="Done Editing" onPress={() => handleScreenshotAndUpload()} />
 
             </View>
           ) : (
             <View>
+              
+              <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{store}</Text>
+
+  
               <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{store}</Text>
               <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{storeAddr}</Text>
 

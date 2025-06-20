@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <View style = {styles.container}>
       <View style = {styles.title}>
-        <Text style={{ fontSize: 22, color: 'black' }}>Life Management</Text>
+        <Text style={{ fontSize: 22, color: 'black' }}>Ton's AI Financial Management App</Text>
 
       </View>
       
@@ -24,7 +24,7 @@ export default function Home() {
         <FontAwesome5 name="file-alt" size={24} color="white" /></TouchableOpacity>
 
         <TouchableOpacity style = {styles.emailbutton}>
-          <Text style={{marginBottom:10}}>AI Email Summary</Text>
+          <Text style={{marginBottom:10}}>AI Finance Planner</Text>
         <FontAwesome5 name="envelope-open-text" size={24} color="white" /></TouchableOpacity>
 
         <TouchableOpacity style = {styles.notesButton}>

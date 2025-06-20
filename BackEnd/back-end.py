@@ -16,6 +16,9 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+print("📦 Using database URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+
+
 # Init DB
 db.init_app(app)
 

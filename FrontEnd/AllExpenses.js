@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, Modal, FlatList, TouchableOpacity, ScrollView, Image, Pressable,
+  View, Text, Modal, TouchableOpacity, ScrollView, Image, Pressable, FlatList
 } from 'react-native';
 import axios from 'axios';
 import { API_BASE_URL } from '@env';
@@ -36,6 +36,12 @@ export default function AllExpenses() {
 
   // Track if user has attempted to filter yet (to avoid showing message too early)
   const [hasFiltered, setHasFiltered] = useState(false);
+
+  //Total sepnt expenses of the chosen month and year 
+  const [monthExpenses, setMonthExpenses] = useState(0);
+
+  //Total spent expense for all specific type of all receipts
+  const [typeTotals, setTypeTotals] = useState({});
 
   // Fetch expenses + setup year dropdown
   useEffect(() => {
@@ -76,6 +82,17 @@ export default function AllExpenses() {
 
     const sorted = filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     setFilteredExpense(sorted);
+    const total = sorted.reduce((sum,item) => sum += item.total_price, 0);  //Calculate total expenses of the chosen month and year
+
+    const typeSum = {}  //Create list to store sum of each receipt's type
+    sorted.forEach((item) => {
+      if(!typeSum[item.receipt_type]){   //If this type of receipt is not yet in the list
+        typeSum[item.receipt_type] = 0   //We start its total value to 0
+      }
+      typeSum[item.receipt_type] += item.total_price;  //Then we plus the total price of that type receipt
+    });
+    setMonthExpenses(total);
+    setTypeTotals(typeSum);
     setHasFiltered(true); // Mark that user clicked the button
   };
 
@@ -126,7 +143,21 @@ export default function AllExpenses() {
             There is no record of any receipt for the chosen time.
           </Text>
         ) : (
-          filteredExpense.map((exp, idx) => (
+          <>
+      <View style={{ marginBottom: 20 }}>
+        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+          Total Expenses: ${monthExpenses.toFixed(2)}
+        </Text>
+        <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 10 }}>
+          Total by Receipt Type:
+        </Text>
+        {Object.entries(typeTotals).map(([type, amount], idx) => (
+          <Text key={idx} style={{ marginLeft: 10 }}>
+            {type}: ${amount.toFixed(2)}
+          </Text>
+        ))}
+      </View>
+          {filteredExpense.map((exp, idx) => (
             <View key={idx} style={{ marginBottom: 20 }}>
               <Text>Date: {exp.date}</Text>
               <Text>Total: ${exp.total_price}</Text>
@@ -138,7 +169,9 @@ export default function AllExpenses() {
                 />
               </TouchableOpacity>
             </View>
-          ))
+          )
+        )}
+        </>
         )}
       </ScrollView>
 

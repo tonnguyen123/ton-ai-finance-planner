@@ -20,9 +20,11 @@ import { captureRef } from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-
+import { useTheme } from './styles/useTheme';
+import BottomTabs from './BottomTab';
 
 export default function GetIncome() {
+  const { theme } = useTheme();
   const [imageUri, setImageUri] = useState(null);
   const [income, setIncome] = useState('');
   const [usedCamera, setUsedCamera] = useState(false);
@@ -220,9 +222,11 @@ const processPickedImage = async (uri) => {
   };
 
   return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
     <KeyboardAwareScrollView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <ScrollView
         contentContainerStyle={{ padding: 20 }}
@@ -245,35 +249,39 @@ const processPickedImage = async (uri) => {
           <View>
             <TextInput
               placeholder="Employer Name"
+              placeholderTextColor={theme.textColor}
               value={manualEmployer}
               onChangeText={setManualEmployer}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
             <TextInput
               placeholder="Net Income"
+              placeholderTextColor={theme.textColor}
               value={income}
               onChangeText={setIncome}
               keyboardType="numeric"
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
             <TextInput
               placeholder="Payment Date (YYYY-MM-DD)"
+              placeholderTextColor={theme.textColor}
               value={paymentDate}
               onChangeText={setPaymentDate}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
             <TextInput
               placeholder="Frequency"
+              placeholderTextColor={theme.textColor}
               value={frequency}
               onChangeText={handleTypeChange}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
 
             {filteredSuggestions.length > 0 && (
               <ScrollView style={{ borderWidth: 1, borderColor: '#ccc', maxHeight: 150 }}>
                 {filteredSuggestions.map((item) => (
                   <TouchableOpacity key={item} onPress={() => handleSelectSuggestion(item)}>
-                    <Text style={{ padding: 10, backgroundColor: '#f0f0f0', borderBottomWidth: 1 }}>{item}</Text>
+                    <Text style={{ padding: 10, backgroundColor: '#f0f0f0', borderBottomWidth: 1 , borderBlockColor: theme.textColor, color: theme.textColor}}>{item}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -293,28 +301,32 @@ const processPickedImage = async (uri) => {
           <View>
             <TextInput
               placeholder="Employer Name" 
+              placeholderTextColor={theme.textColor}
               value={employer}
               onChangeText={setEmployer}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor }}
             />
             <TextInput
               placeholder="Net Income"
+              placeholderTextColor={theme.textColor}
               value={income}
               onChangeText={setIncome}
               keyboardType="numeric"
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
             <TextInput
               placeholder="Payment Date (YYYY-MM-DD)"
+              placeholderTextColor={theme.textColor}
               value={paymentDate}
               onChangeText={setPaymentDate}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
             <TextInput
               placeholder="Frequency"
+              placeholderTextColor={theme.textColor}
               value={frequency}
               onChangeText={handleTypeChange}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 , borderBlockColor: theme.textColor, color: theme.textColor}}
             />
 
             {filteredSuggestions.length > 0 && (
@@ -350,6 +362,11 @@ const processPickedImage = async (uri) => {
           </View>
         )}
       </ScrollView>
+
+      <BottomTabs></BottomTabs>
     </KeyboardAwareScrollView>
+
+    </View>
+    
   );
 }

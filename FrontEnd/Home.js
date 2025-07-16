@@ -1,17 +1,21 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { styles } from './styles/mainPage';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { styles } from './styles/mainPage';
+import { FontAwesome5 } from '@expo/vector-icons';
+import BottomTabs from './BottomTab';
+import { useTheme } from './styles/useTheme';
 
 export default function Home() {
   const navigation = useNavigation();
+  const { theme } = useTheme(); 
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Top content */}
-      <View style={styles.container}>
+      <StatusBar backgroundColor={theme.background} />
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <View style={styles.title}>
-          <Text style={{ fontSize: 22, color: 'black' }}>
+          <Text style={{ fontSize: 22, color: theme.textColor }}>
             Ton's AI Financial Management App
           </Text>
         </View>
@@ -37,47 +41,21 @@ export default function Home() {
             style={styles.emailbutton}
             onPress={() => navigation.navigate("GetIncome")}
           >
-            <Text style={{ marginBottom: 10 }}>Earning</Text>
+            <Text style={{ marginBottom: 10 }}>Scan Pay Slip AI</Text>
             <FontAwesome5 name="envelope-open-text" size={24} color="white" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.notesButton}
-            onPress={() => navigation.navigate("SpendingReport")}
+            onPress={() => navigation.navigate("GoalPlanner")}
           >
-            <Text style={{ marginBottom: 10 }}>Notes by voice</Text>
+            <Text style={{ marginBottom: 10 }}>Create Goal</Text>
             <FontAwesome5 name="sticky-note" size={24} color="black" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Bottom nav bar */}
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          height: 60,
-          borderTopWidth: 1,
-          borderColor: '#ccc',
-          backgroundColor: '#f5f5f5',
-        }}
-      >
-        <TouchableOpacity onPress={() => navigation.navigate("ExpenseLimit")}>
-          <MaterialIcons name="attach-money" size={28} color="black" />
-          <Text style={{ fontSize: 12 }}>Limit</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("FinancialPlan")}>
-          <MaterialIcons name="bar-chart" size={28} color="black" />
-          <Text style={{ fontSize: 12 }}>Plan</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-          <MaterialIcons name="settings" size={28} color="black" />
-          <Text style={{ fontSize: 12 }}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomTabs />
     </View>
   );
 }

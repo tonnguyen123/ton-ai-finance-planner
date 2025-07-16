@@ -6,10 +6,7 @@ const buttonWidth = screenWidth * 0.4;
 const buttonHeight = screenHeight * 0.12;
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
+  
 
   title: {
     fontSize: 22,

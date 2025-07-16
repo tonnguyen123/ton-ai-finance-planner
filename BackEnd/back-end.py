@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify,send_from_directory
 from flask_cors import CORS
-from models import db, Expense, Earnings
+from models import db, Expense, Earnings, Passowrd, BudgetLimit, Theme, SavingsGoal
 from datetime import datetime
 import base64
 import os
@@ -20,7 +20,7 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-print("📦 Using database URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+print("Using database URI:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 
 # Init DB
@@ -117,10 +117,10 @@ def check_affordability():
     question = data.get('question')
 
     prompt = f"""
-You are a financial assistant helping someone evaluate affordability. 
-Their monthly income is ${income} and expenses are ${expenses}. 
-They are asking: "{question}". Give a clear, human explanation whether it’s affordable and why.
-"""
+    You are a financial assistant helping someone evaluate affordability. 
+    Their monthly income is ${income} and expenses are ${expenses}. 
+    They are asking: "{question}". Give a clear, human explanation whether it’s affordable and why.
+    """
 
     try:
         response = openai.ChatCompletion.create(
@@ -246,9 +246,250 @@ Respond ONLY in JSON like:
         print("GPT error:", e)
         return jsonify({"error": str(e)}), 500
 
+# Save 4-digit PIN
+@app.route('/set-pin', methods=['POST'])
+def set_pin():
+    data = request.get_json()
+    pin = data.get('pin')
+    print('pin sent from front end is ' + pin)
+    if not pin or len(pin) != 4:
+        return jsonify({'error': 'PIN must be 4 digits'}), 400
+
+    existing = Passowrd.query.first()
+    if existing:
+        existing.password = pin
+    else:
+        new_pin = Passowrd(password=pin)
+        db.session.add(new_pin)
+    db.session.commit()
+    return jsonify({'message': 'PIN saved'}), 200
+
+
+# Get existing PIN (to check if one exists)
+@app.route('/get-pin', methods=['GET'])
+def get_pin():
+    pin_entry = Passowrd.query.first()
+    return jsonify({'pin': pin_entry.password if pin_entry else None}), 200
+
+
+#Create monthly budget or by specific month and year
+@app.route('/create-budget-limit', methods=['POST'])
+def create_budget_limit():
+    data = request.get_json()
+    print("Incoming data:", data) 
+
+    limit = data.get('limit')
+    month = data.get('month')
+    year = data.get('year')
+    
+    try:
+        print("Parsed limit:", limit, "month:", month, "year:", year)
+
+        existing = BudgetLimit.query.filter_by(month=month, year=year).first()
+        print("Existing budget:", existing)
+
+        if existing:
+            existing.limit = limit
+            message = "Budget limit updated"
+        else:
+            new_budget = BudgetLimit(limit=limit, month=month, year=year)
+            db.session.add(new_budget)
+            message = "Budget limit created."
+        
+        db.session.commit()
+        return jsonify({'message': message}), 200
+    
+    except Exception as e:
+        print(" Error creating budget limit:", e)
+        return jsonify({'error': str(e)}), 500
+
+#Get the theme for the app
+@app.route('/get-theme', methods=['GET'])
+def get_theme():
+    theme = Theme.query.first()
+    if not theme:
+        theme = Theme(textColor="#000000", background="#FFFFFF")  # default colors
+        db.session.add(theme)
+        db.session.commit()
+    return jsonify(theme.to_dict())
+
+
+#Update the theme colors for the app
+@app.route('/update-theme', methods=['POST'])
+def update_theme():
+    data = request.get_json()
+    theme = Theme.query.first()
+    if theme:
+        theme.textColor = data.get('textColor', theme.textColor)
+        theme.background = data.get('background', theme.background)
+    else:
+        theme = Theme(textColor=data.get('textColor'), background=data.get('background'))
+        db.session.add(theme)
+    db.session.commit()
+    return jsonify(theme.to_dict())
+
+#get all budget limits
+@app.route('/get-limits', methods = ['GET'])
+def get_limit():
+    limits = BudgetLimit.query.all()
+    data = [l.to_dict() for l in limits]
+    return jsonify({'limits': data})
+
+
+@app.route('/create-goal', methods=['POST'])
+def create_goal():
+    try:
+        data = request.get_json()
+
+        goal_name = data.get('goal_name')
+        target_amount = float(data.get('target_amount', 0))
+        start_time = datetime.fromisoformat(data.get('start_time'))
+        end_time = datetime.fromisoformat(data.get('end_time'))
+
+        if not goal_name or not target_amount or not start_time or not end_time:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        new_goal = SavingsGoal(
+            goal_name=goal_name,
+            target_amount=target_amount,
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        db.session.add(new_goal)
+        db.session.commit()
+
+        return jsonify({'message': 'Goal created successfully!', 'goal': new_goal.to_dict()}), 201
+
+    except Exception as e:
+        print("Error creating goal:", e)
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/get-goals', methods=['GET'])
+def get_goals():
+    goals = SavingsGoal.query.all()
+    data = [g.to_dict() for g in goals]
+    return jsonify({'limits': data})
+
+@app.route('/delete-goal/<int:goalID>',methods=['DELETE'])
+def delete_goal(goalID):
+    goal = SavingsGoal.query.get(goalID)
+    if not goal:
+        return jsonify({'error': 'Goal not found.'}), 404
+
+    db.session.delete(goal)
+    db.session.commit()
+    return jsonify({'message': 'Goal deleted successfully'}), 200
+
+@app.route('/update-goal/<int:goalID>', methods=['PUT'])
+def update_goal(goalID):
+    data = request.get_json()
+    goal = SavingsGoal.query.get(goalID)
+
+    if not goal:
+        return jsonify({'error': 'Goal not found.'}), 404
+
+    # Update fields if they exist in the request body
+    if 'goal_name' in data:
+        goal.goal_name = data['goal_name']
+
+    if 'target_amount' in data:
+        try:
+            goal.target_amount = float(data['target_amount'])
+        except ValueError:
+            return jsonify({'error': 'Invalid target amount.'}), 400
+
+    # Optional: add more fields if needed
+    # e.g., start_time, end_time
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Goal updated successfully.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update goal.', 'details': str(e)}), 500
+
+
+
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    try:
+        # Step 1: Get user question
+        data = request.get_json()
+        question = data.get("question", "")
+
+        # Step 2: Load data from your DB
+        goals = SavingsGoal.query.all()
+        limits = BudgetLimit.query.all()
+        earnings = Earnings.query.all()
+        expenses = Expense.query.all()
+
+        # Step 3: Format data for GPT prompt
+        goal_summary = goal_summary = "\n".join([
+    f"- Goal: {g.goal_name}, Target: ${g.target_amount}, From: {g.start_time.date()} to {g.end_time.date()}"
+    for g in goals
+])
+
+        
+        earning_summary = "\n".join([f"- {e.income_name}, ${e.income}, {e.date}, {e.frequency}" for e in earnings])
+        expense_summary = "\n".join([f"- {x.receipt_type}, ${x.total_price}, {x.date}" for x in expenses])
+
+        # Step 4: Build prompt
+        prompt = f"""
+You are a financial assistant AI helping the user understand their personal finances.
+
+Here is the user’s financial data:
+Goals:
+{goal_summary}
+
+
+
+ Earnings:
+{earning_summary}
+
+ Expenses:
+{expense_summary}
+
+Now, answer this question from the user:
+"{question}"
+
+Be concise, friendly, and helpful.
+"""
+
+        # Step 5: Send to OpenRouter
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_api_key:
+            return jsonify({"error": "Missing OPENROUTER_API_KEY"}), 500
+
+        headers = {
+            "Authorization": f"Bearer {openrouter_api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost",
+            "X-Title": "AI Financial Assistant"
+        }
+
+        payload = {
+            "model": "mistralai/mistral-small-3.2-24b-instruct:free",
+            "messages": [
+                {"role": "system", "content": "You are a helpful AI financial assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        }
+
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        res.raise_for_status()
+        response_text = res.json()["choices"][0]["message"]["content"]
+
+        return jsonify({"answer": response_text})
+
+    except Exception as e:
+        print("Chatbot error:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+    

@@ -7,8 +7,11 @@ import { API_BASE_URL } from '@env';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { FontAwesome } from '@expo/vector-icons';
 
-import { TextInput } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { useTheme } from './styles/useTheme';
+import BottomTabs from './BottomTab';
 
 
 // Month names for selection dropdown
@@ -17,13 +20,17 @@ const months = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+
+
 //Get the width and length of the phone screen
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-export default function AllExpenses() {
+
+export default function AllExpenses({navigation}) {
   // All expenses fetched from backend
   const [allExpense, setAllExpense] = useState([]);
+  const { theme } = useTheme();
 
   // Filtered expenses after clicking "Show Receipts"
   const [filteredExpense, setFilteredExpense] = useState([]);
@@ -281,10 +288,10 @@ export default function AllExpenses() {
   }
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
+    <View style={{ flex: 1, padding: 10 , backgroundColor:theme.background}}>
 
       {/* ===== Dropdown: Month ===== */}
-      <Text>Select Month:</Text>
+      <Text style={{color:theme.textColor}}>Select Month:</Text>
       <TouchableOpacity
         onPress={() => setMonthPickerVisible(true)}
         style={{
@@ -292,11 +299,11 @@ export default function AllExpenses() {
           borderRadius: 5, marginBottom: 10,
         }}
       >
-        <Text>{months[selectedMonth]}</Text>
+        <Text style={{color:theme.textColor}}>{months[selectedMonth]}</Text>
       </TouchableOpacity>
 
       {/* ===== Dropdown: Year ===== */}
-      <Text>Select Year:</Text>
+      <Text style={{color:theme.textColor}}>Select Year:</Text>
       <TouchableOpacity
         onPress={() => setYearPickerVisible(true)}
         style={{
@@ -304,10 +311,10 @@ export default function AllExpenses() {
           borderRadius: 5, marginBottom: 10,
         }}
       >
-        <Text>{selectedYear}</Text>
+        <Text style={{color:theme.textColor}}>{selectedYear}</Text>
       </TouchableOpacity>
 
-      <Text>Filter By:</Text>
+      <Text style={{color:theme.textColor}}>Filter By:</Text>
         <View style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, marginBottom: 10 }}>
           {['All', 'Expenses', 'Earnings'].map(option => (
             <TouchableOpacity key={option} onPress={() => setFilterOption(option)} style={{ padding: 10, backgroundColor: filterOption === option ? '#007AFF' : '#fff' }}>
@@ -336,7 +343,7 @@ export default function AllExpenses() {
     (filterOption === 'Expenses' && filteredExpense.length === 0) ||
     (filterOption === 'Earnings' && filteredEarnings.length === 0)
   ) ? (
-    <Text style={{ fontStyle: 'italic', marginTop: 20 }}>
+    <Text style={{ fontStyle: 'italic', marginTop: 20 , color:theme.textColor}}>
       There is no record of any {filterOption.toLowerCase()} for the chosen time.
     </Text>
   ) : (
@@ -344,23 +351,26 @@ export default function AllExpenses() {
       <View style={{ marginBottom: 20 }}>
         {filterOption === 'Expenses' && (
           <View>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color:theme.textColor }}>
               Total Monthly Expenses: ${monthExpenses.toFixed(2)}
             </Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 10 , color:theme.textColor}}>
               Total by Receipt Type:
             </Text>
           </View>
         )}
-
+        <TouchableOpacity style={{borderRadius:5, backgroundColor:'green', height:30, alignItems: 'center',justifyContent: 'center', marginTop:10}}
+        onPress={() => navigation.navigate('SpendingReport', { typeTotals })}>
+          <Text style={{color:'white'}}>View Expense Graphs</Text>
+        </TouchableOpacity>
         {filterOption === 'Earnings' && (
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color:theme.textColor }}>
             Total Monthly Earnings: ${totalIncome.toFixed(2)}
           </Text>
         )}
 
         {Object.entries(typeTotals).map(([type, amount], idx) => (
-          <Text key={idx} style={{ marginLeft: 10 }}>
+          <Text key={idx} style={{ marginLeft: 10 , color:theme.textColor }}>
             {type}: ${amount.toFixed(2)}
           </Text>
         ))}
@@ -368,15 +378,15 @@ export default function AllExpenses() {
 
       {/* 💡 NEW: Show filteredExpense and filteredEarnings in 'All' */}
       {filterOption === 'All' && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: 20 , color:theme.textColor}}>
           <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
             Total Monthly Income: ${totalIncome.toFixed(2)}
           </Text>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 10 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 10 , color:theme.textColor}}>
             Total Monthly Expenses: ${monthExpenses.toFixed(2)}
           </Text>
           {Object.entries(typeTotals).map(([type, amount], idx) => (
-            <Text key={idx} style={{ marginLeft: 10 }}>
+            <Text key={idx} style={{ marginLeft: 10 , color:theme.textColor}}>
               {type}: ${amount.toFixed(2)}
             </Text>
           ))}
@@ -386,9 +396,9 @@ export default function AllExpenses() {
       {(filterOption === 'Expenses' || filterOption === 'All') &&
         filteredExpense.map((exp, idx) => (
           <View key={idx} style={{ marginBottom: 20, borderRadius: 10, backgroundColor: "#3ee0f3", padding: 5 }}>
-            <Text>Date: {exp.date}</Text>
-            <Text>Total: ${exp.total_price}</Text>
-            <Text>Type: {exp.receipt_type}</Text>
+            <Text style={{color:theme.textColor}}>Date: {exp.date}</Text>
+            <Text style={{color:theme.textColor}}>Total: ${exp.total_price}</Text>
+            <Text style={{color:theme.textColor}}>Type: {exp.receipt_type}</Text>
             <TouchableOpacity onPress={() => openImage(`${API_BASE_URL}/${exp.screenshot_path}`)}>
               <Image
                 source={{ uri: `${API_BASE_URL}/${exp.screenshot_path}` }}
@@ -401,10 +411,10 @@ export default function AllExpenses() {
       {(filterOption === 'Earnings' || filterOption === 'All') &&
         filteredEarnings.map((earn, idx) => (
           <View key={idx} style={{ marginBottom: 20, borderRadius: 10, backgroundColor: "#b3f3a3", padding: 5 }}>
-            <Text>Date: {earn.date}</Text>
-            <Text>Income: ${parseFloat(earn.income).toFixed(2)}</Text>
-            <Text>Employer: {earn.income_name}</Text>
-            <Text>Frequency: {earn.frequency}</Text>
+            <Text style={{color:theme.textColor}}>Date: {earn.date}</Text>
+            <Text style={{color:theme.textColor}}>Income: ${parseFloat(earn.income).toFixed(2)}</Text>
+            <Text style={{color:theme.textColor}}>Employer: {earn.income_name}</Text>
+            <Text style={{color:theme.textColor}}>Frequency: {earn.frequency}</Text>
             <TouchableOpacity onPress={() => openImage(`${API_BASE_URL}/${earn.screenshot_path}`)}>
               <Image
                 source={{ uri: `${API_BASE_URL}/${earn.screenshot_path}` }}
@@ -438,7 +448,7 @@ export default function AllExpenses() {
                 padding: 10,
               }}
             >
-              <Text style={{ color: 'white', fontSize: 16 }}>✕</Text>
+              <Text style={{ color: 'white', fontSize: 16 , color:theme.textColor}}>✕</Text>
             </Pressable>
           )}
         />
@@ -450,7 +460,7 @@ export default function AllExpenses() {
           flex: 1, backgroundColor: 'white', padding: 20,
           justifyContent: 'center',
         }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Select Month</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 , color:theme.textColor}}>Select Month</Text>
           <FlatList
             data={months}
             keyExtractor={(item) => item}
@@ -475,7 +485,7 @@ export default function AllExpenses() {
           flex: 1, backgroundColor: 'white', padding: 20,
           justifyContent: 'center',
         }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Select Year</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10,  color:theme.textColor }}>Select Year</Text>
           <FlatList
             data={years}
             keyExtractor={(item) => item.toString()}
@@ -487,12 +497,13 @@ export default function AllExpenses() {
                 }}
                 style={{ padding: 10 }}
               >
-                <Text>{item}</Text>
+                <Text style={{color:theme.textColor}}>{item}</Text>
               </TouchableOpacity>
             )}
           />
         </View>
       </Modal>
+      <BottomTabs></BottomTabs>
     </View>
   );
 }

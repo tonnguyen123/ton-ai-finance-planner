@@ -16,10 +16,13 @@ import { TextInput as PaperInput } from 'react-native-paper';
 import { API_BASE_URL, MINDEE_API } from '@env';
 import { captureRef } from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
+import { useTheme } from './styles/useTheme';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import BottomTabs from './BottomTab';
 
 
 export default function Expenses() {
+  const { theme } = useTheme();
   const [items, setItems] = useState([]);   //List of all information of the receipt
   const [imageUri, setImageUri] = useState(null);  //The path containing the picture of the receipt
   const [totalPrice, setTotalPrice] = useState('');  //The total price of the receipt
@@ -229,12 +232,14 @@ const processPickedImage = async (uri) => {
  
 
   return (
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
     <KeyboardAwareScrollView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <ScrollView
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ padding: 20 , backgroundColor: theme.background, flex:1}}
         keyboardShouldPersistTaps="handled"
         ref={viewRef} 
       >
@@ -251,7 +256,7 @@ const processPickedImage = async (uri) => {
             }}
           >
         <FontAwesome name="camera" size={20} color="#fff" style={{ marginRight: 10 }} />
-        <Text style={{ color: '#fff', fontSize: 16 }}> Scan picture of your Receipt or Earning</Text>
+        <Text style={{ color: '#fff', fontSize: 16 }}> Scan picture of your Rece ipt or Earning</Text>
         </TouchableOpacity>
 
         {/* Manual entry button */}
@@ -267,7 +272,7 @@ const processPickedImage = async (uri) => {
           }}
         >
           <FontAwesome name="pencil" size={20} color="#fff" style={{ marginRight: 10 }} />
-          <Text style={{ color: '#fff', fontSize: 16 }}>Enter receipt or earning manually</Text>
+          <Text style={{ color: theme.textColor, fontSize: 16 }}>Enter receipt or earning manually</Text>
         </TouchableOpacity>
           {imageUri && (
             <Image
@@ -278,12 +283,12 @@ const processPickedImage = async (uri) => {
 
 
           {manualMode && (
-          <View style={{ marginBottom: 20 }}>
+          <View style={{ marginBottom: 20 , backgroundColor:theme.background}}>
             <TextInput
               placeholder="Store Name"
               value={manualStore}
               onChangeText={setManualStore}
-              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10 }}
+              style={{ borderBottomWidth: 1, fontSize: 16, marginBottom: 10, borderBlockColor: theme.textColor, color: theme.textColor }}
             />
             <TextInput
               placeholder="Total Price"
@@ -340,13 +345,13 @@ const processPickedImage = async (uri) => {
                 value={store}
                 onChangeText={setStore}
                 placeholder="Store Name"
-                style={{ fontSize: 18, fontWeight: 'bold', borderBottomWidth: 1 }}
+                style={{ fontSize: 18, fontWeight: 'bold', borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
               />
               <TextInput
                 value={storeAddr}
                 onChangeText={setStoreAddr}
                 placeholder="Store Address"
-                style={{ fontSize: 18, fontWeight: 'bold', borderBottomWidth: 1 }}
+                style={{ fontSize: 18, fontWeight: 'bold', borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor }}
               />
 
               {items.map((item, idx) => (
@@ -359,7 +364,7 @@ const processPickedImage = async (uri) => {
                       setItems(updated);
                     }}
                     placeholder="Item"
-                    style={{ flex: 1, borderBottomWidth: 1 }}
+                    style={{ flex: 1, borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
                   />
                   <TextInput
                     value={item.price.toString()}
@@ -370,7 +375,7 @@ const processPickedImage = async (uri) => {
                     }}
                     placeholder="Price"
                     keyboardType="numeric"
-                    style={{ width: 80, borderBottomWidth: 1 }}
+                    style={{ width: 80, borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
                   />
                 </View>
               ))}
@@ -380,26 +385,26 @@ const processPickedImage = async (uri) => {
                 onChangeText={setTotalPrice}
                 placeholder="Total Price"
                 keyboardType="numeric"
-                style={{ fontSize: 16, borderBottomWidth: 1 }}
+                style={{ fontSize: 16, borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
               />
               <TextInput
                 value={purchaseDate}
                 onChangeText={setPurchaseDate}
                 placeholder="Purchase Date (YYYY-MM-DD)"
-                style={{ borderBottomWidth: 1 }}
+                style={{ borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
               />
               <TextInput
                 value={purchaseTime}
                 onChangeText={setPurchaseTime}
                 placeholder="Purchase Time(HH:MM)"
-                style={{ borderBottomWidth: 1 }}
+                style={{ borderBottomWidth: 1 , borderColor: theme.textColor, color: theme.textColor}}
               />
               <PaperInput
               label="Receipt Type"
               value={receiptType}
               onChangeText={handleTypeChange}
               mode="outlined"
-              style={{ marginVertical: 10 }}
+              style={{ marginVertical: 10 , borderColor: theme.textColor, color: theme.textColor }}
             />
 
             {/* Dropdown Suggestions */}
@@ -464,6 +469,10 @@ const processPickedImage = async (uri) => {
           )}
         </View>
       </ScrollView>
+      <BottomTabs></BottomTabs>
     </KeyboardAwareScrollView>
+
+      </View>
+    
   );
 }

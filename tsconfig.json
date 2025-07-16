@@ -13,8 +13,9 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
+  "include": ["**/*.ts", "**/*.tsx", "declarations.d.ts"],
   "exclude": [
     "node_modules",
     "babel.config.js",

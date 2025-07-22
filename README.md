@@ -5,6 +5,8 @@ An AI-powered mobile app built with React Native and Flask, designed to help use
 Click the image below to watch a full walkthrough of the app:
 
 [![Watch the demo](https://img.youtube.com/vi/sgCwrGNKQSc/0.jpg)](https://www.youtube.com/watch?v=sgCwrGNKQSc)
+
+
 🚀 Features
 📸 OCR-based receipt and payslip scanning (Mindee API)
 

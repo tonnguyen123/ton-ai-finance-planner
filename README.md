@@ -42,6 +42,7 @@ bash
 Copy
 Edit
 git clone [https://github.com/yourusername/ai-life-admin](https://github.com/tonnguyen123/ton-ai-finance-planner).git
+
 cd ai-life-admin
 2. Install frontend dependencies
 bash

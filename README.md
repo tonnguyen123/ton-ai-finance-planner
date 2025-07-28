@@ -25,7 +25,7 @@ Click the image below to watch a full walkthrough of the app:
 🔒 Local storage using SQLite (no cloud database)
 
 🛠 Tech Stack
-Frontend: React Native, Expo, TypeScript
+Frontend: React Native, Expo, Javascript
 
 Backend: Python, Flask, SQLite
 

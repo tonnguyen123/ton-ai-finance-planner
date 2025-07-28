@@ -109,4 +109,3 @@ LinkedIn • Portfolio • Email
 📄 License
 MIT License – feel free to fork and build upon this project!
 
-Let me know if you want a copy of this in markdown or tailored to a different type of project.
